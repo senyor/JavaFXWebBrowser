@@ -1,3 +1,4 @@
+config.properties
 /target/
 /nbproject/
 /src/main/resources/de/lwerner/javafxwebbrowser/fontawesome-webfont.ttf

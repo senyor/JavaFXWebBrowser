@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Worker;
@@ -39,6 +40,7 @@ public class MainApp extends Application {
         if (!urlAsString.contains("://")) {
             urlAsString = "http://" + urlAsString;
         }
+        properties.setProperty(PropertyName.URL_LAST, urlAsString);
         webEngine.load(urlAsString);
     }
     
@@ -58,7 +60,8 @@ public class MainApp extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
-        Font.loadFont(getClass().getResource("fontawesome-webfont.ttf").toExternalForm(), 12);
+        Font.loadFont(getClass().getResource("fontawesome-webfont.ttf")
+                .toExternalForm(), 12);
         
         webView = new WebView();
         webEngine = webView.getEngine();
@@ -67,8 +70,10 @@ public class MainApp extends Application {
         
         BorderPane borderPane = new BorderPane(webView);
         
-        HBox topBar = new HBox(5);
+        BorderPane topBar = new BorderPane();
         topBar.setPadding(new Insets(5));
+        
+        BorderPane topRight = new BorderPane();
         
         Button btnHome = new Button("\uf015");
         btnHome.setFont(Font.font("FontAwesome", 14));
@@ -82,8 +87,6 @@ public class MainApp extends Application {
                 loadCurrentInput();
             }
         });
-        tfUrl.setMinWidth(300);
-        tfUrl.setMaxWidth(500);
         
         urlInput = new SimpleStringProperty();
         urlInput.bind(tfUrl.textProperty());
@@ -102,7 +105,8 @@ public class MainApp extends Application {
                 try {
                     search();
                 } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(MainApp.class.getName())
+                            .log(Level.SEVERE, null, ex);
                 }
             }
         });
@@ -116,22 +120,31 @@ public class MainApp extends Application {
             try {
                 search();
             } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(MainApp.class.getName())
+                        .log(Level.SEVERE, null, ex);
             }
         });
         
-        topBar.getChildren().addAll(btnHome, tfUrl, btnGo, lbSearch, tfSearch, btnSearch);
+        topRight.setLeft(btnGo);
+        topRight.setCenter(tfSearch);
+        topRight.setRight(btnSearch);
+        
+        topBar.setLeft(btnHome);
+        topBar.setCenter(tfUrl);
+        topBar.setRight(topRight);
              
         borderPane.setTop(topBar);
         
         ProgressBar progressBar = new ProgressBar();
-        progressBar.progressProperty().bind(webEngine.getLoadWorker().progressProperty());
+        progressBar.progressProperty().bind(webEngine.getLoadWorker()
+                .progressProperty());
         
         webEngine.getLoadWorker().stateProperty().addListener((e, o, n) -> {
             if (n == Worker.State.SUCCEEDED) {
                 progressBar.setVisible(false);
             } else if (n == Worker.State.FAILED) {
-                webEngine.load(MainApp.class.getResource("error.html").toExternalForm());
+                webEngine.load(MainApp.class.getResource("error.html")
+                        .toExternalForm());
                 progressBar.setVisible(false);
             } else if (n == Worker.State.RUNNING) {
                 progressBar.setVisible(true);
@@ -142,7 +155,8 @@ public class MainApp extends Application {
         
         Scene scene = new Scene(root, 800, 500);
         
-        stage.setTitle(properties.getProperty(PropertyName.APP_NAME));
+        stage.setTitle(properties.getProperty(PropertyName.APP_NAME) + " " 
+                + properties.getProperty(PropertyName.APP_VERSION));
         stage.setScene(scene);
         stage.show();
     }
@@ -151,9 +165,18 @@ public class MainApp extends Application {
         properties = AppProperties.getInstance();
         try {
             properties.readAppProperties();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    properties.writeAppProperties();
+                } catch (IOException ex) {
+                    Logger.getLogger(MainApp.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                }
+            }));
             launch(args);
         } catch (IOException ex) {
-            Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MainApp.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
     }
 
