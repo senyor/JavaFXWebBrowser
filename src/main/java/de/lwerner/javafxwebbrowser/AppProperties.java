@@ -37,6 +37,7 @@ public class AppProperties {
                     setProperty(prop, temp.getProperty(prop.propertyKey));
                 }
             }
+            setProperty(PropertyName.APP_VERSION, temp.getProperty("app.version"));
         }
     }
     

@@ -16,7 +16,8 @@ public enum PropertyName {
     // URL properties
     URL_HOME("url.home"),
     URL_SEARCH("url.search"),
-    URL_LAST("url.last");
+    URL_LAST("url.last"),
+    URL_GOOGLESUGGEST("url.googlesuggest");
     
     final String propertyKey;
     

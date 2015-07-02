@@ -12,11 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -25,7 +24,6 @@ import javafx.stage.Stage;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -40,12 +38,11 @@ public class MainApp extends Application {
     private WebView webView;
     private WebEngine webEngine;
 
+    private ComboBox<String> cbSearch;
     private ComboBox<String> cbUrl;
 
     private List<String> history;
 
-    private StringProperty searchInput;
-    
     private final File historyFile = new File(System.getProperty("user.dir") + "/" + "history.txt");
 
     private void loadSite(String urlAsString) {
@@ -71,19 +68,21 @@ public class MainApp extends Application {
     }
 
     private void search(String query) throws UnsupportedEncodingException {
-        String urlAsString = properties.getProperty(PropertyName.URL_SEARCH);
-        urlAsString += URLEncoder.encode(query, "UTF-8");
-        loadSite(urlAsString);
+        if (query != null && !query.isEmpty()) {
+            String urlAsString = properties.getProperty(PropertyName.URL_SEARCH);
+            urlAsString += URLEncoder.encode(query, "UTF-8");
+            loadSite(urlAsString);
+        }
     }
 
     private void search() throws UnsupportedEncodingException {
-        search(searchInput.get());
+        search(cbSearch.getValue());
     }
-    
+
     private void writeHistory() throws IOException {
         Files.write(historyFile.toPath(), history, Charset.defaultCharset());
     }
-    
+
     private void loadHistory() throws IOException {
         List<String> tempList = Files.readAllLines(historyFile.toPath());
         tempList.stream().forEach((s) -> {
@@ -133,12 +132,10 @@ public class MainApp extends Application {
         cbUrl.setMaxWidth(Double.MAX_VALUE);
         cbUrl.setEditable(true);
         cbUrl.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
-
             @Override
             public void changed(ObservableValue observable, Object oldValue, Object newValue) {
                 loadCurrentInput();
             }
-
         });
 
         cbUrl.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
@@ -151,7 +148,8 @@ public class MainApp extends Application {
         Bindings.bindContent(history, cbUrl.getItems());
         try {
             loadHistory();
-        } catch (IOException ex) { }
+        } catch (IOException ex) {
+        }
 
         Button btnGo = new Button("\uf061");
         btnGo.setFont(Font.font("FontAwesome", 14));
@@ -161,20 +159,47 @@ public class MainApp extends Application {
 
         Label lbSearch = new Label("Search:");
 
-        TextField tfSearch = new TextField();
-        tfSearch.setOnKeyReleased((KeyEvent e) -> {
-            if (e.getCode() == KeyCode.ENTER) {
+        cbSearch = new ComboBox();
+        cbSearch.setEditable(true);
+
+        cbSearch.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
+
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
                 try {
                     search();
                 } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(MainApp.class.getName())
-                            .log(Level.SEVERE, null, ex);
+                    Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+
         });
 
-        searchInput = new SimpleStringProperty();
-        searchInput.bind(tfSearch.textProperty());
+        cbSearch.getEditor().addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                try {
+                    search();
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                if (cbSearch.getEditor().getText() != null && !cbSearch.getEditor().getText().isEmpty()) {
+                    cbSearch.getItems().clear();
+                    SuggestQueriesService suggestQueriesService = new SuggestQueriesService(cbSearch.getEditor().getText());
+                    suggestQueriesService.setOnSucceeded((WorkerStateEvent event1) -> {
+                        List<String> querySuggestions = suggestQueriesService.getValue();
+                        querySuggestions.stream().forEach((s) -> {
+                            cbSearch.getItems().add(s);
+                        });
+                    });
+                    suggestQueriesService.start();
+                    cbSearch.show();
+                } else {
+                    cbSearch.hide();
+                }
+
+            }
+        });
 
         Button btnSearch = new Button("\uf002");
         btnSearch.setFont(Font.font("FontAwesome", 14));
@@ -188,7 +213,7 @@ public class MainApp extends Application {
         });
 
         topRight.setLeft(btnGo);
-        topRight.setCenter(tfSearch);
+        topRight.setCenter(cbSearch);
         topRight.setRight(btnSearch);
 
         topBar.setLeft(btnHome);
@@ -223,6 +248,10 @@ public class MainApp extends Application {
         stage.show();
 
         loadSite(properties.getProperty(PropertyName.URL_HOME));
+    }
+    
+    public static AppProperties getProperties() {
+        return properties;
     }
 
     public static void main(String[] args) {
