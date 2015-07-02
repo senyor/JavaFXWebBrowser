@@ -1,4 +1,5 @@
 config.properties
+history.txt
 /target/
 /nbproject/
 /src/main/resources/de/lwerner/javafxwebbrowser/fontawesome-webfont.ttf

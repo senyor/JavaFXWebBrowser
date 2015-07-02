@@ -13,7 +13,8 @@ To build this project, you need to `git clone https://github.com/lukaswerner/Jav
 # Checklist
 This is a checklist where you can see, what I want to implement here and which functions already exist.
 - [x] Created a new application and made it runnable
-- [ ] Browserhistory and search suggestions
+- [x] Browserhistory
+- [ ] Search suggestions
 - [ ] Download files
 - [ ] Tabs
 - [ ] Popup Blocker
@@ -24,3 +25,7 @@ All notable changes to this project will be documented in this file.
 #### [0.1] - 2015-06-30
 ##### Added
 - Initially created this application and made it runnable
+
+#### [0.2] - 2015-07-02
+##### Added
+- Made browser history available
