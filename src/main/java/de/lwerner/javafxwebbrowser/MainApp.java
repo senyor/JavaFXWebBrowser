@@ -4,28 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.stage.Stage;
 import javafx.scene.layout.StackPane;
-import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebEngine;
@@ -37,34 +25,41 @@ public class MainApp extends Application {
 
     private WebView webView;
     private WebEngine webEngine;
-
-    private ComboBox<String> cbSearch;
-    private ComboBox<String> cbUrl;
-
-    private List<String> history;
-
+    
+    private Toolbar toolbar;
+    
     private final File historyFile = new File(System.getProperty("user.dir") + "/" + "history.txt");
+    
+    public void next() {
+        // TODO: En-/Disable
+        try {
+            webEngine.getHistory().go(1);
+        } catch (Exception e) {
+            // DO NOTHING
+        }
+    }
+    
+    public void previous() {
+        // TODO: En-/Disable
+        try {
+            webEngine.getHistory().go(-1);
+        } catch (Exception e) {
+            // DO NOTHING
+        }
+    }
 
     public void loadHome() {
         loadSite(properties.getProperty(PropertyName.URL_HOME));
     }
     
-    public String loadSite(String urlAsString) {
+    public void loadSite(String urlAsString) {
         if (urlAsString == null || urlAsString.isEmpty()) {
-            return null;
+            return;
         }
         if (!urlAsString.contains("://")) {
             urlAsString = "http://" + urlAsString;
         }
         webEngine.load(urlAsString);
-        return urlAsString;
-    }
-
-    private void loadCurrentInput() {
-        String url = cbUrl.getValue();
-        // Have to use that due to double loading sites, but it does not work yet
-        // cbUrl.getSelectionModel().clearSelection(); 
-        loadSite(url);
     }
 
     public void search(String query) throws UnsupportedEncodingException {
@@ -76,14 +71,14 @@ public class MainApp extends Application {
     }
 
     private void writeHistory() throws IOException {
-        Files.write(historyFile.toPath(), history, Charset.defaultCharset());
+//        Files.write(historyFile.toPath(), toolbar.getHistory(), Charset.defaultCharset());
     }
 
     private void loadHistory() throws IOException {
-        List<String> tempList = Files.readAllLines(historyFile.toPath());
-        tempList.stream().forEach((s) -> {
-            cbUrl.getItems().add(s);
-        });
+//        if (historyFile.exists()) {
+//            List<String> tempList = Files.readAllLines(historyFile.toPath());
+//            toolbar.setHistory(tempList);
+//        }
     }
 
     @Override
@@ -110,113 +105,16 @@ public class MainApp extends Application {
 
         webView = new WebView();
         webEngine = webView.getEngine();
+        webEngine.locationProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                toolbar.setCurrentUrl(newValue);
+            }
+        });
 
         BorderPane borderPane = new BorderPane(webView);
 
-//        BorderPane topBar = new BorderPane();
-//        topBar.setPadding(new Insets(5));
-//
-//        BorderPane topRight = new BorderPane();
-//
-//        Button btnHome = new Button("\uf015");
-//        btnHome.setFont(Font.font("FontAwesome", 14));
-//        btnHome.setOnAction(e -> {
-//            loadSite(properties.getProperty(PropertyName.URL_HOME));
-//        });
-//
-//        cbUrl = new ComboBox<>();
-//        cbUrl.setMaxWidth(Double.MAX_VALUE);
-//        cbUrl.setEditable(true);
-//        cbUrl.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
-//            @Override
-//            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-//                loadCurrentInput();
-//            }
-//        });
-//
-//        cbUrl.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-//            if (event.getCode() == KeyCode.ENTER) {
-//                loadCurrentInput();
-//            }
-//        });
-//
-//        history = new LinkedList<>();
-//        Bindings.bindContent(history, cbUrl.getItems());
-//        try {
-//            loadHistory();
-//        } catch (IOException ex) {
-//        }
-//
-//        Button btnGo = new Button("\uf061");
-//        btnGo.setFont(Font.font("FontAwesome", 14));
-//        btnGo.setOnAction(e -> {
-//            loadCurrentInput();
-//        });
-//
-//        Label lbSearch = new Label("Search:");
-//
-//        cbSearch = new ComboBox();
-//        cbSearch.setEditable(true);
-//
-//        cbSearch.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
-//
-//            @Override
-//            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-//                try {
-//                    search();
-//                } catch (UnsupportedEncodingException ex) {
-//                    Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
-//
-//        });
-//
-//        cbSearch.getEditor().addEventHandler(KeyEvent.KEY_RELEASED, event -> {
-//            if (event.getCode() == KeyCode.ENTER) {
-//                try {
-//                    search();
-//                } catch (UnsupportedEncodingException ex) {
-//                    Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            } else {
-//                if (cbSearch.getEditor().getText() != null && !cbSearch.getEditor().getText().isEmpty()) {
-//                    cbSearch.getItems().clear();
-//                    SuggestQueriesService suggestQueriesService = new SuggestQueriesService(cbSearch.getEditor().getText());
-//                    suggestQueriesService.setOnSucceeded((WorkerStateEvent event1) -> {
-//                        List<String> querySuggestions = suggestQueriesService.getValue();
-//                        querySuggestions.stream().forEach((s) -> {
-//                            cbSearch.getItems().add(s);
-//                        });
-//                    });
-//                    suggestQueriesService.start();
-//                    cbSearch.show();
-//                } else {
-//                    cbSearch.hide();
-//                }
-//
-//            }
-//        });
-//
-//        Button btnSearch = new Button("\uf002");
-//        btnSearch.setFont(Font.font("FontAwesome", 14));
-//        btnSearch.setOnAction(e -> {
-//            try {
-//                search();
-//            } catch (UnsupportedEncodingException ex) {
-//                Logger.getLogger(MainApp.class.getName())
-//                        .log(Level.SEVERE, null, ex);
-//            }
-//        });
-//
-//        topRight.setLeft(btnGo);
-//        topRight.setCenter(cbSearch);
-//        topRight.setRight(btnSearch);
-//
-//        topBar.setLeft(btnHome);
-//        topBar.setCenter(cbUrl);
-//        topBar.setRight(topRight);
-
-        Toolbar toolbar = new Toolbar(this);
+        toolbar = new Toolbar(this);
         borderPane.setTop(toolbar);
 
         ProgressBar progressBar = new ProgressBar();

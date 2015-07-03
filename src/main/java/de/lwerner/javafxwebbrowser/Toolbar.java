@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -73,7 +75,46 @@ public class Toolbar extends GridPane {
     }
     
     private void eventHandling() {
-        cbSearch.getEditor().addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+        btNext.setOnAction(e -> {
+            context.next();
+        });
+        
+        btPrevious.setOnAction(e -> {
+            context.previous();
+        });
+        
+        cbAddress = new ComboBox<>();
+        cbAddress.setMaxWidth(Double.MAX_VALUE);
+        cbAddress.setEditable(true);
+        cbAddress.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                context.loadSite(cbAddress.getValue());
+            }
+        });
+        
+        cbAddress.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                context.loadSite(cbAddress.getValue());
+            }
+        });
+        
+        btGo.setOnAction(e -> {
+            context.loadSite(cbAddress.getValue());
+        });
+        
+        cbSearch.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                try {
+                    context.search(cbSearch.getValue());
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        cbSearch.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 try {
                     context.search(cbSearch.getValue());
@@ -95,6 +136,14 @@ public class Toolbar extends GridPane {
                 } else {
                     cbSearch.hide();
                 }
+            }
+        });
+        
+        btSearch.setOnAction(e -> {
+            try {
+                context.search(cbSearch.getValue());
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(Toolbar.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
         
@@ -131,6 +180,22 @@ public class Toolbar extends GridPane {
         
         GridPane.setHgrow(cbAddress, Priority.ALWAYS);
         GridPane.setHgrow(cbSearch, Priority.SOMETIMES);
+    }
+
+    public void setCurrentUrl(String location) {
+        if (!cbAddress.getItems().contains(location)) {
+            cbAddress.getItems().add(location);
+        }
+        cbAddress.setValue(location);
+    }
+    
+    public List<String> getHistory() {
+        return cbAddress.getItems();
+    }
+    
+    public void setHistory(List<String> history) {
+        cbAddress.getItems().clear();
+        cbAddress.getItems().addAll(history);
     }
     
 }
