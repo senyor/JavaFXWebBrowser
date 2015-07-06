@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -29,7 +32,7 @@ public class MainApp extends Application {
     private Toolbar toolbar;
     
     private final File historyFile = new File(System.getProperty("user.dir") + "/" + "history.txt");
-    
+        
     public void next() {
         // TODO: En-/Disable
         try {
@@ -71,14 +74,14 @@ public class MainApp extends Application {
     }
 
     private void writeHistory() throws IOException {
-//        Files.write(historyFile.toPath(), toolbar.getHistory(), Charset.defaultCharset());
+        Files.write(historyFile.toPath(), toolbar.getHistory(), Charset.defaultCharset());
     }
 
     private void loadHistory() throws IOException {
-//        if (historyFile.exists()) {
-//            List<String> tempList = Files.readAllLines(historyFile.toPath());
-//            toolbar.setHistory(tempList);
-//        }
+        if (historyFile.exists()) {
+            List<String> tempList = Files.readAllLines(historyFile.toPath());
+            toolbar.setHistory(tempList);
+        }
     }
 
     @Override
@@ -116,6 +119,8 @@ public class MainApp extends Application {
 
         toolbar = new Toolbar(this);
         borderPane.setTop(toolbar);
+        
+        loadHistory();
 
         ProgressBar progressBar = new ProgressBar();
         progressBar.progressProperty().bind(webEngine.getLoadWorker()

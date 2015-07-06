@@ -17,8 +17,10 @@ This is a checklist where you can see, what I want to implement here and which f
 - [x] Search suggestions
 - [ ] Download files
 - [ ] Tabs
-- [ ] Popup Blocker
 - [ ] Beautiful Browser
+
+# Known Bugs
+- You have to click ENTER or the GO button to change to a selected site from the history.
 
 # Change Log
 All notable changes to this project will be documented in this file.
@@ -26,6 +28,7 @@ All notable changes to this project will be documented in this file.
 #### [0.3] - 2015-07-02
 ##### Added
 - The browser now suggests search queries
+- Made the toolbar more beautiful
 
 #### [0.2] - 2015-07-02
 ##### Added

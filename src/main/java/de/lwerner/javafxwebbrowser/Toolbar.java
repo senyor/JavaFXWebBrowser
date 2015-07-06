@@ -25,7 +25,7 @@ public class Toolbar extends GridPane {
     
     private static final AppProperties properties = MainApp.getProperties();
     
-    private MainApp context;
+    private final MainApp context;
 
     private Button btPrevious;
     private Button btNext;
@@ -86,12 +86,6 @@ public class Toolbar extends GridPane {
         cbAddress = new ComboBox<>();
         cbAddress.setMaxWidth(Double.MAX_VALUE);
         cbAddress.setEditable(true);
-        cbAddress.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                context.loadSite(cbAddress.getValue());
-            }
-        });
         
         cbAddress.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if (event.getCode() == KeyCode.ENTER) {
@@ -182,11 +176,16 @@ public class Toolbar extends GridPane {
         GridPane.setHgrow(cbSearch, Priority.SOMETIMES);
     }
 
-    public void setCurrentUrl(String location) {
+    public synchronized void setCurrentUrl(String location) {
+        // TODO: Check for possibilities to autoload site on click in history
         if (!cbAddress.getItems().contains(location)) {
-            cbAddress.getItems().add(location);
+            cbAddress.getItems().add(0, location);
+            if (cbAddress.getItems().size() > 
+                    Integer.valueOf(properties.getProperty(PropertyName.APP_HISTORYSIZE))) {
+                cbAddress.getItems().remove(cbAddress.getItems().size() - 1);
+            }
         }
-        cbAddress.setValue(location);
+        cbAddress.getEditor().setText(location);
     }
     
     public List<String> getHistory() {

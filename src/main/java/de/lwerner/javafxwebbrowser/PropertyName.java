@@ -12,11 +12,11 @@ public enum PropertyName {
     // App properties
     APP_NAME("app.name"),
     APP_VERSION("app.version"),
+    APP_HISTORYSIZE("app.historysize"),
     
     // URL properties
     URL_HOME("url.home"),
     URL_SEARCH("url.search"),
-    URL_LAST("url.last"),
     URL_GOOGLESUGGEST("url.googlesuggest");
     
     final String propertyKey;
