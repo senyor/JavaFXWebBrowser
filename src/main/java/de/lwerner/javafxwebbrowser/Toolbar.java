@@ -55,8 +55,10 @@ public class Toolbar extends GridPane {
     private void initialize() {
         btPrevious = new Button("\uf060");
         btPrevious.setFont(Font.font("FontAwesome", 14));
+        btPrevious.setDisable(true);
         btNext = new Button("\uf061");
         btNext.setFont(Font.font("FontAwesome", 14));
+        btNext.setDisable(true);
         
         cbAddress = new ComboBox<>();
         
@@ -186,6 +188,8 @@ public class Toolbar extends GridPane {
             }
         }
         cbAddress.getEditor().setText(location);
+        btNext.setDisable(!context.hasNext());
+        btPrevious.setDisable(!context.hasPrevious());
     }
     
     public List<String> getHistory() {

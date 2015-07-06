@@ -32,9 +32,17 @@ public class MainApp extends Application {
     private Toolbar toolbar;
     
     private final File historyFile = new File(System.getProperty("user.dir") + "/" + "history.txt");
+    
+    public boolean hasNext() {
+        return webEngine.getHistory().getCurrentIndex() < webEngine.getHistory().getEntries().size() - 1;
+    }
+    
+    public boolean hasPrevious() {
+        // Little bug: First site change later recognized
+        return webEngine.getHistory().getCurrentIndex() > 0;
+    }
         
     public void next() {
-        // TODO: En-/Disable
         try {
             webEngine.getHistory().go(1);
         } catch (Exception e) {
@@ -43,7 +51,6 @@ public class MainApp extends Application {
     }
     
     public void previous() {
-        // TODO: En-/Disable
         try {
             webEngine.getHistory().go(-1);
         } catch (Exception e) {
