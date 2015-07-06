@@ -33,7 +33,7 @@ public class AppProperties {
         try (InputStream in = getClass().getResourceAsStream(FILE_NAME)) {
             temp.load(in);
             for (PropertyName prop: PropertyName.values()) {
-                if (!delegate.contains(prop.propertyKey)) {
+                if (!delegate.containsKey(prop.propertyKey)) {
                     setProperty(prop, temp.getProperty(prop.propertyKey));
                 }
             }

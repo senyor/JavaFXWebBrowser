@@ -21,10 +21,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Window;
 
 public class MainApp extends Application {
 
     private static AppProperties properties;
+    
+    private Stage mainWindow;
 
     private WebView webView;
     private WebEngine webEngine;
@@ -57,9 +60,17 @@ public class MainApp extends Application {
             // DO NOTHING
         }
     }
+    
+    public Window getWindow() {
+        return mainWindow;
+    }
 
     public void loadHome() {
         loadSite(properties.getProperty(PropertyName.URL_HOME));
+    }
+    
+    public void updateHome() {
+        properties.setProperty(PropertyName.URL_HOME, webEngine.getLocation());
     }
     
     public void loadSite(String urlAsString) {
@@ -123,6 +134,8 @@ public class MainApp extends Application {
         });
 
         BorderPane borderPane = new BorderPane(webView);
+        
+        mainWindow = stage;
 
         toolbar = new Toolbar(this);
         borderPane.setTop(toolbar);

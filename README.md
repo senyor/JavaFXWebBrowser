@@ -15,8 +15,11 @@ This is a checklist where you can see, what I want to implement here and which f
 - [x] Created a new application and made it runnable
 - [x] Browserhistory
 - [x] Search suggestions
+- [x] Outsourced topbar/toolbar
+- [x] Options menu
 - [ ] Download files
 - [ ] Tabs
+- [ ] Popup blocker
 - [ ] Beautiful Browser
 
 # Known Bugs
@@ -28,7 +31,7 @@ All notable changes to this project will be documented in this file.
 #### [0.3] - 2015-07-02
 ##### Added
 - The browser now suggests search queries
-- Made the toolbar more beautiful
+- Made the toolbar more beautiful and outsourced it
 
 #### [0.2] - 2015-07-02
 ##### Added

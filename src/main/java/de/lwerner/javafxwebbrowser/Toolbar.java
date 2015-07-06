@@ -10,6 +10,8 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -40,6 +42,8 @@ public class Toolbar extends GridPane {
     
     private Button btHome;
     private Button btOptions;
+    
+    private ContextMenu cmOptions;
     
     public Toolbar(MainApp context) {
         this.context = context;
@@ -74,6 +78,13 @@ public class Toolbar extends GridPane {
         btHome.setFont(Font.font("FontAwesome", 14));
         btOptions = new Button("\uf0c9");
         btOptions.setFont(Font.font("FontAwesome", 14));
+        
+        cmOptions = new ContextMenu();
+        MenuItem itemUpdateHome = new MenuItem("Update home");
+        itemUpdateHome.setOnAction(e -> {
+            context.updateHome();
+        });
+        cmOptions.getItems().add(itemUpdateHome);
     }
     
     private void eventHandling() {
@@ -145,6 +156,11 @@ public class Toolbar extends GridPane {
         
         btHome.setOnAction(e -> {
             context.loadHome();
+        });
+
+        btOptions.setOnAction(e -> {
+            // TODO: Style this a bit better
+            cmOptions.show(context.getWindow());
         });
     }
     
