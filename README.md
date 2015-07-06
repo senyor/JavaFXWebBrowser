@@ -28,7 +28,7 @@ This is a checklist where you can see, what I want to implement here and which f
 # Change Log
 All notable changes to this project will be documented in this file.
 
-#### [0.3] - 2015-07-02
+#### [0.3] - 2015-07-06
 ##### Added
 - The browser now suggests search queries
 - Made the toolbar more beautiful and outsourced it
